@@ -6,6 +6,12 @@ A Clojure library designed to ... well, that part is up to you.
 
 FIXME
 
+## Special Thanks
+
+I owe special thanks to the folks at AvisoNovate, whose work was both an
+inspiration and a constant reference. Their library, [pretty](https://github.com/AvisoNovate/pretty), was
+what set me down this path in the first place.
+
 ## License
 
 Copyright © 2015 FIXME
