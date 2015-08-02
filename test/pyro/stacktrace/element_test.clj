@@ -16,5 +16,5 @@
         (is (= (element/element->map element)
                {:class "clojure.lang.RT"
                 :filename "RT.java"
-                :line 724
+                :line 800
                 :method "contains"}))))))
