@@ -42,5 +42,5 @@
 (defn get-var-filename
   "Given a var or class, return the filename in question."
   {:added "0.1.0"}
-  [v]
-  (-> v symbol resolve meta :file))
+  [n s]
+  (-> (symbol n s) resolve meta :file))

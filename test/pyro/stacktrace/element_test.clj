@@ -4,9 +4,9 @@
 
 (deftest is-read-eval-print-element?-works
   (is (some? (element/is-read-eval-print-element?
-              {:class "clojure.main/repl/read-eval-print--6625/fn--6628"})))
+              "clojure.main$repl$read_eval_print__6625")))
   (is (nil? (element/is-read-eval-print-element?
-             {:class "pyro.core-test/a-test"}))))
+             "pyro.core-test/a-test"))))
 
 (deftest element->map-works
   (try
