@@ -62,8 +62,7 @@
   (alter-var-root
    #'clojure.stacktrace/print-cause-trace ;; this is what clojure.test uses
    (constantly (partial pprint-exception {:show-source true
-                                          :drop-nrepl-elements true
-                                          :hide-clojure-elements true})))
+                                          :drop-nrepl-elements true})))
 
 ;; REPL
   (alter-var-root
