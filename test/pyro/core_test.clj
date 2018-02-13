@@ -1,6 +1,7 @@
 (ns pyro.core-test
-  (:require [clojure.test :refer :all]))
+  (:require [clojure.test :refer :all]
+            [pyro.dummy-fns :as dummy-fns]))
 
-(deftest a-test
-  (testing "FIXME, I fail."
-    (is (contains? 5 5))))
+(deftest ^:demo sample-failure
+  (testing "This test should deliberately fail"
+    (is (some? (dummy-fns/i-dont-work)))))

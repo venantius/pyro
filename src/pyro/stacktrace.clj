@@ -13,6 +13,9 @@
     st))
 
 (defn remove-clojure
+  "Given a seq of stacktrace element maps, remove all elements belonging
+  to the Clojure compiler or standard library (i.e. `clojure.core`,
+  `clojure.lang`, etc.)"
   [st {:keys [hide-clojure-elements]}]
   (if hide-clojure-elements
     (remove #(element/is-clojure-element? (.getClassName %)) st)
