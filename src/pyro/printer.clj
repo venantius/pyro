@@ -53,10 +53,13 @@
        (print "    ")
        (print-trace-element e opts)))))
 
-(defn middleware
-  ([] (middleware {:show-source true
-                   :drop-nrepl-elements true
-                   :hide-clojure-elements true}))
+(defn swap-stacktrace-engine!
+  ([]
+   (swap-stacktrace-engine!
+    {:show-source true
+     :drop-nrepl-elements true
+     :hide-clojure-elements true
+     :hide-lein-elements true}))
   ([opts]
    (alter-var-root
     #'clojure.stacktrace/print-stack-trace

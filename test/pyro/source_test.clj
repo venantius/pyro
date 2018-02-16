@@ -25,7 +25,7 @@
                                    :file "core_test.clj"})
          "pyro/core_test.clj"))
   (is (= (source/get-var-filename {:ns "pyro.core-test"
-                                   :fn "sample-failure"
+                                   :fn "sample-var"
                                    :file "core_test.clj"})
          "pyro/core_test.clj")))
 

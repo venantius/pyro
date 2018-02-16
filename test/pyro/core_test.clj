@@ -2,6 +2,7 @@
   (:require [clojure.test :refer :all]
             [pyro.dummy-fns :as dummy-fns]))
 
+(def sample-var)
+
 (deftest ^:demo sample-failure
-  (testing "This test should deliberately fail"
-    (is (some? (dummy-fns/i-dont-work)))))
+  (is (some? (dummy-fns/i-dont-work))))

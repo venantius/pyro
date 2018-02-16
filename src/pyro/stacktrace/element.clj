@@ -15,6 +15,15 @@
    #"(clojure\.core.*|clojure\.lang.*|clojure\.main.*|clojure\.test.*)"
    classname))
 
+(defn is-lein-element?
+  "Is this stacktrace element from `leiningen.core.eval`, `leiningen.test`,
+  or `leiningen.core.main`?"
+  {:added "0.1.0"}
+  [classname]
+  (re-matches
+   #"(leiningen\.core\.eval.*|leiningen\.core\.main.*|leiningen\.test.*)"
+   classname))
+
 (defn element->map
   "Take a stacktrace element and turn it into a map"
   {:added "0.1.0"}

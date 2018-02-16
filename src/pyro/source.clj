@@ -2,8 +2,8 @@
   "A namespace for reading source code off of the classpath"
   (:require [clojure.core.memoize :refer [lu]]
             [clojure.string :as string]
-            [glow.ansi :as ansi]
-            [glow.core :as glow]
+            [glow.colorschemes :as colorschemes]
+            [glow.terminal :as terminal]
             [glow.parse :as parse]
             [instaparse.core :as insta])
   (:import [clojure.lang RT]
@@ -30,8 +30,10 @@
 
 (defn file-source
   [filepath]
-  (glow/highlight
-   (string/join "\n" (line-seq (filepath->buffered-reader filepath)))))
+  (terminal/ansi-colorize
+   colorschemes/terminal-default
+   (parse/parse
+    (string/join "\n" (line-seq (filepath->buffered-reader filepath))))))
 
 (def memoized-file-source
   (lu file-source :lu/threshold 64))
