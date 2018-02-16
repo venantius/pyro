@@ -2,6 +2,8 @@
 
 Pyro is a library for getting exactly what you need out of Clojure stacktraces. It can be thought of as a "booster pack" for clj-stacktrace, with easy configuration for your project's needs.
 
+![example](http://venantius.github.io/pyro/doc/screenshot.png)
+
 ## A Cautionary Note
 
 Pyro is currently alpha software. It may break in unforseen ways and is not guaranteed to be particularly performant. It is advised that Pyro be used in
