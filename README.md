@@ -11,6 +11,14 @@ development environments ONLY, and not in production environments.
 
 For the curious, the big thing that slows down speed is having to look up source code and syntax-highlight it. At the moment Pyro ships with a LU cache to help with cases where the same files cause repeated stacktraces. This comes with some memory overhead but ensures that if your program starts blowing up with stacktraces that all traces after the first will be delivered quickly
 
+## Installation
+
+To use Pyro in your project, just add the following to the :dependencies key of your project.clj:
+
+```clojure
+[venantius/pyro "0.1.1"]
+```
+
 ## Usage
 
 The key method in Pyro is `pyro.printer/pprint-exception`. However, you're unlikely to want to manually trigger it - instead, you'll probably want to use it in place of clojure's default stacktrace invocation methods.

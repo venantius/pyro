@@ -1,4 +1,4 @@
-(defproject venantius/pyro "0.1.0"
+(defproject venantius/pyro "0.1.1"
   :description "Pyro: light up your stacktraces"
   :url "https://github.com/venantius/pyro"
   :license {:name "Eclipse Public License"
@@ -8,4 +8,4 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/core.memoize "0.5.6"]
                  [clj-stacktrace "0.2.8"]
-                 [venantius/glow "0.1.4"]])
+                 [venantius/glow "0.1.5" :exclusions [hiccup garden]]])

@@ -1,3 +1,6 @@
+# 0.1.1
+* Exclude hiccup and garden as transitive dependencies for Glow since they're large dependencies and Pyro doesn't rely on any of Glow's HTML/CSS features.
+
 # 0.1.0
  * Source code reader that highlights the relevant line in question
  * Ability to drop all stacktrace frames once we hit `clojure.main/repl/read-eval-print`.
