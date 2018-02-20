@@ -8,8 +8,9 @@
             [clojure.java.io :as io]
             [clojure.string :as str])
   (:import [clojure.lang RT]
-           [java.io BufferedReader InputStreamReader]
-           (java.nio.charset StandardCharsets)))
+           [java.io BufferedReader InputStreamReader File]
+           [java.nio.charset StandardCharsets]
+           [java.net URLDecoder]))
 
 (defn pad-integer
   "Right-pad an integer with spaces until it takes up 4 character spaces."
@@ -25,38 +26,40 @@
   [s n]
   (str "--> " (pad-integer n) " " s))
 
+(defn file-exists-or-nil [^String file]
+  (when (and file (.exists (io/file file)))
+    (io/file file)))
+
+(defn resource->file
+  [filepath]
+  (when-let [url (io/resource filepath)]
+    (let [url-str (str url)]
+      (cond (str/starts-with? url-str (str "jar:file:" File/separator))
+            (-> url-str
+                (subs (count "jar:file:"))
+                (URLDecoder/decode "UTF-8")
+                (str/split #"!")
+                (drop-last)
+                ((fn [x] (str/join "!" x)))
+                (file-exists-or-nil))
+
+            (str/starts-with? url-str (str "file:" File/separator))
+            (-> url-str
+                (subs (count "file:"))
+                (URLDecoder/decode "UTF-8")
+                (file-exists-or-nil))))))
+
 (defn filepath->lastModified
   [filepath]
-  (let [url (io/resource filepath)
-        file (io/file filepath)]
-    (cond
-      ; handle files inside JARs
-      ; (io/resource "clojure/java/io.clj") =>
-      ; URL "jar:file:/Users/ivref/.m2/repository/org/clojure/clojure/1.8.0/clojure-1.8.0.jar!/clojure/java/io.clj"
-      (and url (= "jar" (.getProtocol url))) (-> url
-                                                 (.getFile)
-                                                 (str/split #"!")
-                                                 (first)
-                                                 (subs 5) ; remove file:
-                                                 (io/file)
-                                                 (.lastModified))
-
-      ; handle local files loaded using require and similar
-      ; (io/resource "pyro/source.clj") =>
-      ; URL "file:/Users/ivref/clojure/pyro/src/pyro/source.clj"
-      (and url (= "file" (.getProtocol url))) (-> url (.getFile) (io/file) (.lastModified))
-
-      ; handle files loaded using Cursive, load-file and similar
-      (.exists file) (.lastModified file)
-
-      :else (throw (ex-info "Could not find lastModified of filepath" {:filepath filepath})))))
+  (when-let [file (or (resource->file filepath)
+                      (file-exists-or-nil filepath))]
+    (.lastModified file)))
 
 (defn filepath->buffered-reader
   [filepath]
-  (if-let [strm (or (.getResourceAsStream (RT/baseLoader) filepath)
+  (when-let [strm (or (.getResourceAsStream (RT/baseLoader) filepath)
                     (io/input-stream (io/file filepath)))]
-    (BufferedReader. (InputStreamReader. strm StandardCharsets/UTF_8))
-    (throw (ex-info "Could not get stream" {:filepath filepath}))))
+    (BufferedReader. (InputStreamReader. strm StandardCharsets/UTF_8))))
 
 (defn file-source
   [[filepath _]]
