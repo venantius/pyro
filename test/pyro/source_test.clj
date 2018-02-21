@@ -1,6 +1,7 @@
 (ns pyro.source-test
   (:require [clojure.test :refer :all]
-            [pyro.source :as source]))
+            [pyro.source :as source]
+            [clojure.string :as str]))
 
 (deftest pad-integer-test
   (is (= (source/pad-integer 5) "5   "))
@@ -27,3 +28,16 @@
                                    :fn "sample-var"
                                    :file "core_test.clj"})
          "pyro/core_test.clj")))
+
+(deftest resource->containing-file-test
+  ; verify standalone clj files and special characters (URLDecoder/decode)
+  (do (require 'pyro.dummyæøå)
+      (is (-> (source/resource->containing-file "pyro/dummyæøå.clj")
+              (.getAbsolutePath)
+              (str/ends-with? "pyro/dummyæøå.clj"))))
+  ; verify jar file
+  (is (-> (source/resource->containing-file "clojure/java/io.clj")
+          (.getAbsolutePath)
+          (str/ends-with? "clojure-1.8.0.jar")))
+  ; missing resource should return nil
+  (is (nil? (source/resource->containing-file "not-found.clj"))))

@@ -30,7 +30,7 @@
   (when (and file (.exists (io/file file)))
     (io/file file)))
 
-(defn resource->containing-file
+(defn ^File resource->containing-file
   "This function returns the containing file of a resource.
 
   This can be a JAR file for a clj resource inside a dependency,
