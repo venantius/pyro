@@ -1,7 +1,8 @@
 (ns pyro.source-test
   (:require [clojure.test :refer :all]
             [pyro.source :as source]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [clojure.java.io :as io]))
 
 (deftest pad-integer-test
   (is (= (source/pad-integer 5) "5   "))
@@ -29,15 +30,14 @@
                                    :file "core_test.clj"})
          "pyro/core_test.clj")))
 
-(deftest resource->containing-file-test
-  ; verify standalone clj files and special characters (URLDecoder/decode)
-  (do (require 'pyro.dummyæøå)
-      (is (-> (source/resource->containing-file "pyro/dummyæøå.clj")
-              (.getAbsolutePath)
-              (str/ends-with? "pyro/dummyæøå.clj"))))
-  ; verify jar file
-  (is (-> (source/resource->containing-file "clojure/java/io.clj")
-          (.getAbsolutePath)
-          (str/ends-with? "clojure-1.8.0.jar")))
-  ; missing resource should return nil
-  (is (nil? (source/resource->containing-file "not-found.clj"))))
+(deftest memoized-file-source-test
+  (let [tempfile "test/pyro/tempfile.clj"]
+    (try
+      (spit tempfile "(ns pyro.tempfile)\n(def dummy1 123)\n")
+      (is (str/includes? (source/memoized-file-source "pyro/tempfile.clj") "dummy1"))
+      (spit tempfile "(ns pyro.tempfile)\n(def dummy2 123)\n")
+      (is (str/includes? (source/memoized-file-source "pyro/tempfile.clj") "dummy2"))
+      (spit tempfile "(ns pyro.tempfile)\n(def dummy3 123)\n")
+      (is (str/includes? (source/memoized-file-source "pyro/tempfile.clj") "dummy3"))
+      (finally
+        (-> (io/file tempfile) (.delete))))))

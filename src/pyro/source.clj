@@ -5,12 +5,12 @@
             [glow.colorschemes :as colorschemes]
             [glow.terminal :as terminal]
             [glow.parse :as parse]
-            [clojure.java.io :as io]
-            [clojure.string :as str])
+            [clojure.java.io :as io])
   (:import [clojure.lang RT]
-           [java.io BufferedReader InputStreamReader File]
+           [java.io BufferedReader InputStreamReader BufferedInputStream]
            [java.nio.charset StandardCharsets]
-           [java.net URLDecoder]))
+           [java.security MessageDigest DigestInputStream]
+           [javax.xml.bind DatatypeConverter]))
 
 (defn pad-integer
   "Right-pad an integer with spaces until it takes up 4 character spaces."
@@ -26,50 +26,26 @@
   [s n]
   (str "--> " (pad-integer n) " " s))
 
-(defn file-exists-or-nil [^String file]
-  (when (and file (.exists (io/file file)))
-    (io/file file)))
-
-(defn ^File resource->containing-file
-  "This function returns the containing file of a resource.
-
-  This can be a JAR file for a clj resource inside a dependency,
-  or a regular clj file for a clj resource used during development."
+(defn filepath->stream
   [filepath]
-  (when-let [url (io/resource filepath)]
-    (let [url-str (str url)]
-      (cond (str/starts-with? url-str (str "jar:file:" File/separator))
-            ; This handles clj files inside JARs, such as
-            ; (resource->file "clojure/java/io.clj")
-            ; => #object[java.io.File 0x74900942 "/home/ire/.m2/repository/org/clojure/clojure/1.8.0/clojure-1.8.0.jar"]
-            (-> url-str
-                (subs (count "jar:file:"))
-                (URLDecoder/decode "UTF-8")
-                (str/split #"!")
-                (drop-last)
-                ((fn [x] (str/join "!" x)))
-                (file-exists-or-nil))
-
-            ; This handles standalone clj files present during development, such as
-            ; (io/resource "pyro/source.clj")
-            ; => #object[java.net.URL 0x2ab4619e "file:/home/ire/code/github/pyro/src/pyro/source.clj"]
-            (str/starts-with? url-str (str "file:" File/separator))
-            (-> url-str
-                (subs (count "file:"))
-                (URLDecoder/decode "UTF-8")
-                (file-exists-or-nil))))))
-
-(defn filepath->lastModified
-  [filepath]
-  (when-let [file (or (resource->containing-file filepath)
-                      (file-exists-or-nil filepath))]
-    (.lastModified file)))
+  (some-> (or (.getResourceAsStream (RT/baseLoader) filepath)
+              (io/input-stream (io/file filepath)))
+          (BufferedInputStream.)))
 
 (defn filepath->buffered-reader
   [filepath]
-  (when-let [strm (or (.getResourceAsStream (RT/baseLoader) filepath)
-                    (io/input-stream (io/file filepath)))]
-    (BufferedReader. (InputStreamReader. strm StandardCharsets/UTF_8))))
+  (some-> (filepath->stream filepath)
+          (InputStreamReader. StandardCharsets/UTF_8)
+          (BufferedReader.)))
+
+(defn filepath->md5
+  [filepath]
+  ; adopted from https://clojuredocs.org/clojure.core/while#example-579c5feae4b0bafd3e2a04c3
+  (let [sha (MessageDigest/getInstance "MD5")]
+    (when-let [stream (filepath->stream filepath)]
+      (with-open [dis (DigestInputStream. stream sha)]
+        (while (> (.read dis) -1)))
+      (DatatypeConverter/printHexBinary (.digest sha)))))
 
 (defn file-source
   "A function for getting colorized source of filepath."
@@ -83,13 +59,13 @@
   "Returns a memoized file-source function that detects changes to files.
 
   This function invokes an inner function taking two arguments,
-  both the filepath and the lastModified of the file.
+  both the filepath and md5 sum of the file.
   This is the function that is actually memoized, and thus
-  the cache will never return old or expired files."
-  (let [invoke-file-source (fn [filepath _] (file-source filepath))
+  the cache will not return old or expired files."
+  (let [invoke-file-source (fn [filepath _] (file-source filepath)) ; ignore the second argument, only used by cache
         memoized-file-source (lu invoke-file-source :lu/threshold 64)]
     (fn [filepath]
-      (memoized-file-source filepath (filepath->lastModified filepath)))))
+      (memoized-file-source filepath (filepath->md5 filepath)))))
 
 (defn source-fn
   "A function for pulling in source code.
