@@ -27,9 +27,13 @@
   (str "--> " (pad-integer n) " " s))
 
 (defn filepath->stream
+  "Returns a buffered stream of filepath, either using classpath or file from disk.
+  Returns nil if filepath cannot be found."
   [filepath]
   (some-> (or (.getResourceAsStream (RT/baseLoader) filepath)
-              (io/input-stream (io/file filepath)))
+              (let [file (io/file filepath)]
+                (when (.exists file)
+                  (io/input-stream file))))
           (BufferedInputStream.)))
 
 (defn filepath->buffered-reader
@@ -39,12 +43,14 @@
           (BufferedReader.)))
 
 (defn filepath->md5
+  "Returns md5 of filepath, or nil if filepath cannot be found."
   [filepath]
   ; adopted from https://clojuredocs.org/clojure.core/while#example-579c5feae4b0bafd3e2a04c3
-  (let [sha (MessageDigest/getInstance "MD5")]
+  (let [sha (MessageDigest/getInstance "MD5")
+        buf (byte-array 8192)]
     (when-let [stream (filepath->stream filepath)]
       (with-open [dis (DigestInputStream. stream sha)]
-        (while (> (.read dis) -1)))
+        (while (> (.read dis buf 0 8192) -1)))
       (DatatypeConverter/printHexBinary (.digest sha)))))
 
 (defn file-source
