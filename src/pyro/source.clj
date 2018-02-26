@@ -68,10 +68,11 @@
   both the filepath and md5 sum of the file.
   This is the function that is actually memoized, and thus
   the cache will not return old or expired files."
-  (let [invoke-file-source (fn [filepath _] (file-source filepath)) ; ignore the second argument, only used by cache
-        memoized-file-source (lu invoke-file-source :lu/threshold 64)]
+  (let [cached-fn (lu (fn [filepath _] ; ignore md5 argument, only used by memoize/lu
+                        (file-source filepath))
+                      :lu/threshold 64)]
     (fn [filepath]
-      (memoized-file-source filepath (filepath->md5 filepath)))))
+      (cached-fn filepath (filepath->md5 filepath)))))
 
 (defn source-fn
   "A function for pulling in source code.
