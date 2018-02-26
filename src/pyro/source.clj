@@ -61,7 +61,7 @@
    (parse/parse
     (string/join "\n" (line-seq (filepath->buffered-reader filepath))))))
 
-(defn cacheable-file-source
+(defn- cacheable-file-source
   "A version of `file-source` that also takes the md5 hash of the file as an arg
   in order to permit caching on the file's contents.
 
@@ -69,7 +69,7 @@
   [path md5]
   (file-source path))
 
-(def cached-file-source
+(def ^:private cached-file-source
   (lu cacheable-file-source :lu/threshold 64))
 
 (defn memoized-file-source
