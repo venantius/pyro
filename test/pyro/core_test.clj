@@ -5,4 +5,7 @@
 (def sample-var)
 
 (deftest ^:demo sample-failure
-  (is (some? (dummy-fns/i-dont-work))))
+  (is (some? (dummy-fns/i-dont-work)))
+  "this
+  is
+  :a")

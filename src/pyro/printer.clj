@@ -4,7 +4,10 @@
             [clojure.stacktrace :as st]
             [pyro.source :as source]
             [pyro.stacktrace :as stacktrace]
-            [pyro.stacktrace.element :as element]))
+            [pyro.stacktrace.element :as element])
+  (:import [clojure.lang RT]))
+
+(defonce options (atom nil))
 
 (defn source-str
   [{:keys [file line]}]
@@ -40,9 +43,11 @@
 
   "
   {:added "0.1.0"}
-  ([tr] (pprint-exception {} tr))
-  ([opts ^Throwable tr & _]
-   (let [st (stacktrace/clean-stacktrace (.getStackTrace tr) opts)]
+  ([] (when-let [e *e]
+        (pprint-exception e)))
+  ([^Throwable tr & _]
+   (let [opts @options
+         st (stacktrace/clean-stacktrace (.getStackTrace tr) opts)]
      (st/print-throwable tr)
      (newline)
      (print " at ")
@@ -61,18 +66,24 @@
      :hide-clojure-elements true
      :hide-lein-elements true}))
   ([opts]
+   (reset! options opts)
    (alter-var-root
     #'clojure.stacktrace/print-stack-trace
-    (constantly (partial pprint-exception {})))
+    (constantly pprint-exception))
    ;; used by clojure.test
    (alter-var-root
     #'clojure.stacktrace/print-cause-trace
-    (constantly (partial pprint-exception opts)))
+    (constantly pprint-exception))
 
    ;; REPL
    (alter-var-root
     #'clojure.main/repl-caught
-    (constantly (partial pprint-exception opts)))
+    (constantly pprint-exception))
    (alter-var-root
     #'clojure.repl/pst
-    (constantly (partial pprint-exception opts)))))
+    (constantly pprint-exception))
+
+   ;; Per Aviso's Pretty -- Clojure 1.8.0+ links clojure.test directly into
+   ;; clojure.stacktrace, so we'll want to reload test after having modified
+   ;; the variable bindings.
+   (RT/loadResourceScript "clojure/test.clj")))
