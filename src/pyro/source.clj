@@ -61,18 +61,23 @@
    (parse/parse
     (string/join "\n" (line-seq (filepath->buffered-reader filepath))))))
 
-(def memoized-file-source
-  "Returns a memoized file-source function that detects changes to files.
+(defn cacheable-file-source
+  "A version of `file-source` that also takes the md5 hash of the file as an arg
+  in order to permit caching on the file's contents.
 
-  This function invokes an inner function taking two arguments,
-  both the filepath and md5 sum of the file.
-  This is the function that is actually memoized, and thus
-  the cache will not return old or expired files."
-  (let [cached-fn (lu (fn [filepath _] ; ignore md5 argument, only used by memoize/lu
-                        (file-source filepath))
-                      :lu/threshold 64)]
-    (fn [filepath]
-      (cached-fn filepath (filepath->md5 filepath)))))
+  Don't use this directly - instead, use the memoized version below."
+  [path md5]
+  (file-source path))
+
+(def cached-file-source
+  (lu cacheable-file-source :lu/threshold 64))
+
+(defn memoized-file-source
+  "Get the syntax-highlighted source code from the file located at filepath.
+  Because syntax-highlighting is expensive, this function caches results
+  based on the filepath and the md5 of the contents at that path."
+  [filepath]
+  (cached-file-source filepath (filepath->md5 filepath)))
 
 (defn source-fn
   "A function for pulling in source code.
