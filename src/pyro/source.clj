@@ -2,6 +2,7 @@
   "A namespace for reading source code off of the classpath"
   (:require [clojure.core.memoize :refer [lu]]
             [clojure.string :as string]
+            [glow.ansi :as ansi]
             [glow.colorschemes :as colorschemes]
             [glow.terminal :as terminal]
             [glow.parse :as parse]
@@ -94,10 +95,12 @@
           line-code (nth content number)
           post (drop (inc number)
                      (take (inc (* number 2)) content))]
-      (string/join "\n" (flatten
+      (str (string/join "\n"
+                        (flatten
                          [(map pad-source pre (range (- line number) line))
                           (pad-source-arrow line-code line)
-                          (map pad-source post (range (inc line) (inc (+ line number))))])))))
+                          (map pad-source post (range (inc line) (inc (+ line number))))]))
+           ansi/reset-font))))
 
 (defn ns->filename
   "Given a namespace string, convert it to a filename."
