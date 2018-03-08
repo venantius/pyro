@@ -1,3 +1,7 @@
+# 0.1.2
+* Add better support for Clojure 1.8.0+ by fixing initialization to hook into clojure.test properly instead of being reset by the clojure.stacktrace import.
+* Added support for custom whitelists.
+
 # 0.1.1
 * Exclude hiccup and garden as transitive dependencies for Glow since they're large dependencies and Pyro doesn't rely on any of Glow's HTML/CSS features.
 

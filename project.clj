@@ -1,4 +1,4 @@
-(defproject venantius/pyro "0.1.1"
+(defproject venantius/pyro "0.1.2"
   :description "Pyro: light up your stacktraces"
   :url "https://github.com/venantius/pyro"
   :license {:name "Eclipse Public License"

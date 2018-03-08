@@ -24,6 +24,14 @@
    #"(leiningen\.core\.eval.*|leiningen\.core\.main.*|leiningen\.test.*)"
    classname))
 
+(defn matches-whitelist?
+  "Does this stacktrace element match one of the regular expressions in the
+  whitelist?"
+  [whitelist classname]
+  (re-matches
+   whitelist
+   classname))
+
 (defn element->map
   "Take a stacktrace element and turn it into a map"
   {:added "0.1.0"}

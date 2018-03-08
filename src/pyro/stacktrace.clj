@@ -29,6 +29,14 @@
     (remove #(element/is-lein-element? (.getClassName %)) st)
     st))
 
+(defn filter-ns-whitelist
+  "Given a seq of stacktrace element maps, remove all elements that don't
+  fit the whitelist."
+  [st {:keys [ns-whitelist]}]
+  (if ns-whitelist
+    (filter #(element/matches-whitelist? ns-whitelist (.getClassName %)) st)
+    st))
+
 (defn clean-stacktrace
   "Clean up our stacktrace."
   [st opts]
@@ -36,5 +44,6 @@
   (let [filtered-elements (-> st
                               (filter-repl opts)
                               (remove-clojure opts)
-                              (remove-leiningen opts))]
+                              (remove-leiningen opts)
+                              (filter-ns-whitelist opts))]
     (map st/parse-trace-elem filtered-elements)))

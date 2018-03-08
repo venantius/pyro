@@ -30,14 +30,37 @@ You can sub Pyro's exception printer in for Clojure's default stacktrace invocat
 (printer/swap-stacktrace-engine!)
 ```
 
-`swap-stacktrace-engine!` can also be provided with an options map with the following options:
+### Configuration
 
- * `:show-source`
- * `:drop-nrepl-elements`
- * `:hide-clojure-elements`
- * `:hide-lein-elements`
+`swap-stacktrace-engine!` can be provided with an options map with the following options:
 
-By default, all of these options are set to true.
+```clojure
+{:show-source true
+ :drop-nrepl-elements true
+ :hide-clojure-elements true
+ :hide-lein-elements true
+ :ns-whitelist nil}
+```
+
+##### `:show-source`
+
+Boolean. If true, prints syntax-highlighted source code as part of the stacktrace.
+
+##### `:drop-nrepl-elements`
+
+Boolean. If true, drops all stackframe elements until a `clojure.main/repl/read-eval-print` frame.
+
+##### `:hide-clojure-elements`
+
+Boolean. If true, removes all stacktrace frames belonging to `clojure.core`, `clojure.lang`, etc.
+
+##### `:hide-lein-elements`
+
+Boolean. If true, removes all stacktrace frames belonging to `leiningen.core.eval`, `leiningen.test`, and `leiningen.core.main`.
+
+##### `:ns-whitelist`
+
+A regex literal. If present, will filter for only those stacktrace frames where the namespace matches one or more of the regular expressions.
 
 ## Special Thanks
 
