@@ -16,7 +16,7 @@ For the curious, the big thing that slows down speed is having to look up source
 To use Pyro in your project, just add the following to the :dependencies key of your project.clj:
 
 ```clojure
-[venantius/pyro "0.1.1"]
+[venantius/pyro "0.1.2"]
 ```
 
 ## Usage
@@ -32,7 +32,7 @@ You can sub Pyro's exception printer in for Clojure's default stacktrace invocat
 
 ### Configuration
 
-`swap-stacktrace-engine!` can be provided with an options map with the following options:
+`swap-stacktrace-engine!` can also be provided with an options map with the following options:
 
 ```clojure
 {:show-source true
