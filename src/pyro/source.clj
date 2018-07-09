@@ -10,8 +10,7 @@
   (:import [clojure.lang RT]
            [java.io BufferedReader InputStreamReader BufferedInputStream]
            [java.nio.charset StandardCharsets]
-           [java.security MessageDigest DigestInputStream]
-           [javax.xml.bind DatatypeConverter]))
+           [java.security MessageDigest DigestInputStream]))
 
 (defn pad-integer
   "Right-pad an integer with spaces until it takes up 4 character spaces."
@@ -43,6 +42,22 @@
           (InputStreamReader. StandardCharsets/UTF_8)
           (BufferedReader.)))
 
+
+(def ^:private hex-digits (char-array "0123456789ABCDEF"))
+
+(defn- bytes-to-hex-str
+  "Convert an array of bytes into a hex encoded string."
+  ; adopted from https://github.com/clojure/clojurescript/blob/544c1b77d76d48f234cdb03746ea993158c46aff/src/main/clojure/cljs/util.cljc#L301
+  [^bytes bytes]
+  (loop [index (int 0)
+         buffer (StringBuilder. (int (* 2 (alength bytes))))]
+    (if (== (alength bytes) index)
+      (.toString buffer)
+      (let [byte (aget bytes index)]
+        (.append buffer (aget ^chars hex-digits (bit-and (bit-shift-right byte 4) 0xF)))
+        (.append buffer (aget ^chars hex-digits (bit-and byte 0xF)))
+        (recur (inc index) buffer)))))
+
 (defn filepath->md5
   "Returns md5 of filepath, or nil if filepath cannot be found."
   [filepath]
@@ -52,7 +67,7 @@
     (when-let [stream (filepath->stream filepath)]
       (with-open [dis (DigestInputStream. stream sha)]
         (while (> (.read dis buf 0 8192) -1)))
-      (DatatypeConverter/printHexBinary (.digest sha)))))
+      (bytes-to-hex-str (.digest sha)))))
 
 (defn file-source
   "A function for getting colorized source of filepath."
